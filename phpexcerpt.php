@@ -5,20 +5,31 @@
 // unless you decide to make the words unique before passing in
 function _extractLocations($words, $fulltext) {
 	$locations = array();
-	foreach($words as $word) {
-		$wordlen = strlen($word);
-		$loc = stripos($fulltext, $word);
+	if (is_array($words) || is_object($words)) {
+		foreach($words as $word) {
+			$wordlen = strlen($word);
+			$loc = stripos($fulltext, $word);
+			while($loc !== FALSE) {
+				$locations[0] = $loc;
+				$loc = stripos($fulltext, $word, $loc + $wordlen);
+			}
+		}
+	} else {
+		$wordlen = strlen($words);
+		$loc = stripos($fulltext, $words);
 		while($loc !== FALSE) {
-			$locations[] = $loc;
-			$loc = stripos($fulltext, $word, $loc + $wordlen);
+			$locations[0] = $loc;
+			$loc = stripos($fulltext, $words, $loc + $wordlen);
 		}
 	}
 	$locations = array_unique($locations);
-	sort($locations);
 	
+	// If no words were found, show beginning of the fulltext
+	if(empty ($locations)) $locations[0]=0;
+
+	sort($locations);
 	return $locations;
 }
-
 // Work out which is the most relevant portion to display
 // This is done by looping over each match and finding the smallest distance between two found 
 // strings. The idea being that the closer the terms are the better match the snippet would be. 
